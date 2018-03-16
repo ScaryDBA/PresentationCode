@@ -1,11 +1,40 @@
 USE AdventureWorks2014;
 GO
 
-
 ALTER DATABASE AdventureWorks2014 SET QUERY_STORE = ON;
 
 
-EXEC dbo.spAddressByCity
+
+
+
+
+
+
+
+
+
+
+
+
+GO
+
+CREATE   PROC dbo.AddressByCity @City NVARCHAR(30)
+AS
+   SELECT a.AddressID,
+      a.AddressLine1,
+      a.AddressLine2,
+      a.City,
+      sp.Name AS StateProvinceName,
+      a.PostalCode
+   FROM Person.Address AS a
+   JOIN Person.StateProvince AS sp
+      ON a.StateProvinceID = sp.StateProvinceID
+   WHERE a.City = @City;
+
+
+
+
+EXEC dbo.AddressByCity
     @City = N'London';
 
 
@@ -82,7 +111,7 @@ ALTER DATABASE AdventureWorks2014 SET QUERY_STORE = ON;
 
 
 --gather data about query store
-SELECT * FROM sys.database_query_store_options AS dqso
+SELECT * FROM sys.database_query_store_options AS dqso;
 
 
 
@@ -119,7 +148,7 @@ EXEC sys.sp_query_store_flush_db;
 
 
 --query stats
-EXEC dbo.spAddressByCity
+EXEC dbo.AddressByCity
     @City = N'London';
 
 
@@ -170,9 +199,10 @@ JOIN    sys.dm_exec_query_stats AS deqs
 
 
 
-SELECT  qsqt.query_sql_text,
+select qsqt.query_sql_text,
         qsq.avg_compile_duration,
         CAST(qsp.query_plan AS XML),
+		qsp.query_plan,
         qsrs.execution_type_desc,
         qsrs.count_executions,
         qsrs.avg_duration,
@@ -191,10 +221,49 @@ JOIN    sys.query_store_plan AS qsp
         ON qsp.query_id = qsq.query_id
 JOIN    sys.query_store_runtime_stats AS qsrs
         ON qsrs.plan_id = qsp.plan_id
-WHERE   qsq.object_id = OBJECT_ID('dbo.spAddressByCity');
+WHERE   qsq.object_id = OBJECT_ID('dbo.AddressByCity');
 
 
-EXEC dbo.spAddressByCity
+
+
+--Workaround
+--no longer needed as of 1/16
+SELECT qsqt.query_sql_text,
+        qsq.avg_compile_duration,
+        qsp.query_plan,
+        qsrs.execution_type_desc,
+        qsrs.count_executions,
+        qsrs.avg_duration,
+        qsrs.min_duration,
+        qsrs.max_duration,
+        qsrs.avg_cpu_time,
+        qsrs.avg_logical_io_reads,
+        qsrs.avg_logical_io_writes,
+        qsrs.avg_physical_io_reads,
+        qsrs.avg_query_max_used_memory,
+        qsrs.avg_rowcount
+		INTO #Buffer
+FROM    sys.query_store_query AS qsq
+JOIN    sys.query_store_query_text AS qsqt
+        ON qsqt.query_text_id = qsq.query_text_id
+JOIN    sys.query_store_plan AS qsp
+        ON qsp.query_id = qsq.query_id
+JOIN    sys.query_store_runtime_stats AS qsrs
+        ON qsrs.plan_id = qsp.plan_id
+WHERE   qsq.object_id = OBJECT_ID('dbo.AddressByCity')
+
+
+SELECT CAST(b.query_plan AS XML), *
+FROM #Buffer AS b
+
+
+DROP TABLE #Buffer;
+
+
+
+
+
+EXEC dbo.AddressByCity
     @City = N'Mentor'
 
 
@@ -294,7 +363,7 @@ WHERE   bom.BillOfMaterialsID = 2363';
 
 
 
-SELECT  qsqt.*
+SELECT  *
 FROM    sys.query_store_query_text AS qsqt
 JOIN    sys.query_store_query AS qsq
         ON qsq.query_text_id = qsqt.query_text_id
@@ -310,7 +379,7 @@ SELECT  qsqt.*
 FROM    sys.query_store_query_text AS qsqt
 JOIN    sys.query_store_query AS qsq
         ON qsq.query_text_id = qsqt.query_text_id
-WHERE   qsq.object_id = OBJECT_ID('dbo.spAddressByCity');
+WHERE   qsq.object_id = OBJECT_ID('dbo.AddressByCity');
 
 
 
@@ -367,14 +436,70 @@ WHERE   a.City = @City%';
 
 
 
+--picking up info between two points in time
+SET @BaseTime = '2017-09-22 13:33';
+SET @CompareTime = '2016-09-22 12:15';
+ 
+WITH CoreQuery
+AS (SELECT qsp.query_id,
+       qsqt.query_sql_text,
+       qsp.query_plan,
+       qsrs.execution_type_desc,
+       qsrs.count_executions,
+       qsrs.avg_duration,
+       qsrs.max_duration,
+       qsrs.stdev_duration,
+       qsrsi.start_time,
+       qsrsi.end_time
+    FROM sys.query_store_runtime_stats AS qsrs
+    JOIN sys.query_store_runtime_stats_interval AS qsrsi
+       ON qsrsi.runtime_stats_interval_id = qsrs.runtime_stats_interval_id
+    JOIN sys.query_store_plan AS qsp
+       ON qsp.plan_id = qsrs.plan_id
+	JOIN sys.query_store_wait_stats AS qsws
+	ON qsws.plan_id = qsp.plan_id
+    JOIN sys.query_store_query AS qsq
+       ON qsq.query_id = qsp.query_id
+    JOIN sys.query_store_query_text AS qsqt
+       ON qsqt.query_text_id = qsq.query_text_id
+   ),
+BaseData
+AS (SELECT *
+    FROM CoreQuery AS cq
+    WHERE cq.start_time < @BaseTime
+          AND cq.end_time > @BaseTime
+   ),
+CompareData
+AS (SELECT *
+    FROM CoreQuery AS cq
+    WHERE cq.start_time < @CompareTime
+          AND cq.end_time > @CompareTime
+   )
+SELECT bd.query_sql_text,
+   bd.query_plan,
+   bd.avg_duration AS BaseAverage,
+   bd.stdev_duration AS BaseStDev,
+   cd.avg_duration AS CompareAvg,
+   cd.stdev_duration AS CompareStDev,
+   cd.count_executions AS CompareExecCount
+FROM BaseData AS bd
+JOIN CompareData AS cd
+   ON bd.query_id = cd.query_id
+WHERE cd.max_duration > bd.max_duration;
+
+
+
+--using the wait statistics
+
+
+
 
 
 
 
 --seeing different plans for a query
-EXEC dbo.spAddressByCity
+EXEC dbo.AddressByCity
     @City = N'London';
-
 
 
 DECLARE @PlanHandle VARBINARY(64)
@@ -382,7 +507,7 @@ DECLARE @PlanHandle VARBINARY(64)
 SELECT @PlanHandle = deqs.plan_handle 
 FROM sys.dm_exec_query_stats AS deqs
 CROSS APPLY sys.dm_exec_sql_text(deqs.sql_handle) AS dest
-WHERE dest.text LIKE 'CREATE PROC dbo.spAddressByCity%'
+WHERE dest.objectid = OBJECT_ID('dbo.AddressByCity')
 
 IF @PlanHandle IS NOT NULL
     BEGIN
@@ -391,7 +516,7 @@ IF @PlanHandle IS NOT NULL
 GO
 
 
-EXEC dbo.spAddressByCity
+EXEC dbo.AddressByCity
     @City = N'Mentor';
 
 
@@ -399,17 +524,21 @@ EXEC dbo.spAddressByCity
 SELECT  qsq.query_id,
         qsqt.query_text_id,
         qsqt.query_sql_text,
-		CAST(qsp.query_plan AS XML),
+		qsp.query_plan,
 		qsp.last_execution_time,
 		qsq.avg_compile_duration
+INTO #Buffer
 FROM    sys.query_store_query AS qsq
 JOIN    sys.query_store_query_text AS qsqt
         ON qsqt.query_text_id = qsq.query_text_id
 		JOIN sys.query_store_plan AS qsp
 		ON qsp.query_id = qsq.query_id
-WHERE qsq.object_id = OBJECT_ID('dbo.spAddressByCity');
+WHERE qsq.object_id = OBJECT_ID('dbo.AddressByCity');
 
+SELECT CAST(b.query_plan AS XML),* 
+FROM #Buffer AS b
 
+DROP TABLE #Buffer
 
 
 
@@ -427,7 +556,7 @@ SELECT TOP 1
 FROM    sys.query_store_query AS qsq
 JOIN    sys.query_store_plan AS qsp
         ON qsp.query_id = qsq.query_id
-WHERE   qsq.object_id = OBJECT_ID('dbo.spAddressByCity');
+WHERE   qsq.object_id = OBJECT_ID('dbo.AddressByCity');
 
 EXEC sys.sp_query_store_reset_exec_stats
     @plan_id = @PlanID;
@@ -469,9 +598,9 @@ SELECT TOP 1
 FROM    sys.query_store_query AS qsq
 JOIN    sys.query_store_plan AS qsp
         ON qsp.query_id = qsq.query_id
-WHERE   qsq.object_id = OBJECT_ID('dbo.spAddressByCity');
+WHERE   qsq.object_id = OBJECT_ID('dbo.AddressByCity');
 
-EXEC sys.sp_query_store_remove_plan @plan_id =@PlanID;
+EXEC sys.sp_query_store_remove_plan @plan_id = @PlanID;
 
 
 
@@ -481,7 +610,6 @@ EXEC sys.sp_query_store_remove_plan @plan_id =@PlanID;
 
 
 --GUI
---back to slides
 
 
 
@@ -506,7 +634,6 @@ WHERE   dows.wait_type LIKE '%qds%';
 
 
 --GUI & ex events
---back to slides
 
 
 
@@ -515,12 +642,12 @@ WHERE   dows.wait_type LIKE '%qds%';
 
 
 --in memory
-sys.sp_xtp_control_query_exec_stats 
+--sys.sp_xtp_control_query_exec_stats 
 
 
-SELECT  qsp.force_failure_count,
-        qsp.last_force_failure_reason_desc
-FROM    sys.query_store_plan AS qsp
+--SELECT  qsp.force_failure_count,
+--        qsp.last_force_failure_reason_desc
+--FROM    sys.query_store_plan AS qsp
 
 
 
@@ -531,10 +658,8 @@ FROM    sys.query_store_plan AS qsp
 
 
 
-
-
 --plan forcing
-EXEC dbo.spAddressByCity
+EXEC dbo.AddressByCity
     @City = N'London';
 
 
@@ -544,7 +669,7 @@ DECLARE @PlanHandle VARBINARY(64)
 SELECT @PlanHandle = deqs.plan_handle 
 FROM sys.dm_exec_query_stats AS deqs
 CROSS APPLY sys.dm_exec_sql_text(deqs.sql_handle) AS dest
-WHERE dest.text LIKE 'CREATE PROC dbo.spAddressByCity%'
+WHERE dest.text LIKE '%PROC dbo.AddressByCity%'
 
 IF @PlanHandle IS NOT NULL
     BEGIN
@@ -553,12 +678,12 @@ IF @PlanHandle IS NOT NULL
 GO
 
 
-EXEC dbo.spAddressByCity
+EXEC dbo.AddressByCity
     @City = N'Mentor';
 
 
 
-EXEC dbo.spAddressByCity
+EXEC dbo.AddressByCity
     @City = N'London';
 
 
@@ -570,7 +695,7 @@ SELECT  qsq.query_id,
         qsqt.query_text_id,
 		qsp.plan_id,
         qsqt.query_sql_text,
-		CAST(qsp.query_plan AS XML),
+		--CAST(qsp.query_plan AS XML),
 		qsp.last_execution_time,
 		qsq.avg_compile_duration
 FROM    sys.query_store_query AS qsq
@@ -578,7 +703,7 @@ JOIN    sys.query_store_query_text AS qsqt
         ON qsqt.query_text_id = qsq.query_text_id
 		JOIN sys.query_store_plan AS qsp
 		ON qsp.query_id = qsq.query_id
-WHERE qsq.object_id = OBJECT_ID('dbo.spAddressByCity');
+WHERE qsq.object_id = OBJECT_ID('dbo.AddressByCity');
 
 
 
@@ -589,7 +714,7 @@ DECLARE @PlanHandle VARBINARY(64)
 SELECT @PlanHandle = deqs.plan_handle 
 FROM sys.dm_exec_query_stats AS deqs
 CROSS APPLY sys.dm_exec_sql_text(deqs.sql_handle) AS dest
-WHERE dest.text LIKE 'CREATE PROC dbo.spAddressByCity%'
+WHERE dest.text LIKE '%dbo.AddressByCity%'
 
 IF @PlanHandle IS NOT NULL
     BEGIN
@@ -598,12 +723,12 @@ IF @PlanHandle IS NOT NULL
 GO
 
 
-EXEC dbo.spAddressByCity
+EXEC dbo.AddressByCity
     @City = N'Mentor';
 
 
 
-EXEC dbo.spAddressByCity
+EXEC dbo.AddressByCity
     @City = N'London';
 
 
@@ -612,7 +737,7 @@ EXEC dbo.spAddressByCity
 
 
 
-EXEC sys.sp_query_store_force_plan 2,420;
+EXEC sys.sp_query_store_force_plan 214,248;
 
 
 
@@ -623,21 +748,30 @@ EXEC sys.sp_query_store_force_plan 2,420;
 
 SELECT  qsq.query_id,
         qsp.plan_id,
-        CAST(qsp.query_plan AS XML) AS sqlplan
+		CAST(qsp.query_plan AS XML)
 FROM    sys.query_store_query AS qsq
 JOIN    sys.query_store_plan AS qsp
         ON qsp.query_id = qsq.query_id
-WHERE   qsq.object_id = OBJECT_ID('dbo.spAddressByCity');
+WHERE   qsq.object_id = OBJECT_ID('dbo.AddressByCity');
 
 
 
 
+
+
+SELECT  qsq.query_id,
+        qsp.plan_id,
+		CAST(qsp.query_plan AS XML)
+FROM    sys.query_store_query AS qsq
+JOIN    sys.query_store_plan AS qsp
+        ON qsp.query_id = qsq.query_id
+WHERE   qsp.is_forced_plan = 1;
 
 
 
 
 --undoing plan forcing
-EXEC sys.sp_query_store_unforce_plan 2,420;
+EXEC sys.sp_query_store_unforce_plan 214,248;
 
 
 
@@ -646,7 +780,7 @@ DECLARE @PlanHandle VARBINARY(64)
 SELECT @PlanHandle = deqs.plan_handle 
 FROM sys.dm_exec_query_stats AS deqs
 CROSS APPLY sys.dm_exec_sql_text(deqs.sql_handle) AS dest
-WHERE dest.text LIKE 'CREATE PROC dbo.spAddressByCity%'
+WHERE dest.text LIKE 'CREATE PROC dbo.AddressByCity%'
 
 IF @PlanHandle IS NOT NULL
     BEGIN
@@ -655,7 +789,7 @@ IF @PlanHandle IS NOT NULL
 GO
 
 
-EXEC dbo.spAddressByCity
+EXEC dbo.AddressByCity
     @City = N'London';
 
 
@@ -665,4 +799,47 @@ EXEC dbo.spAddressByCity
 
 
 
+
+
+
+
+
+
+
+--extra script for a different database
+CREATE PROCEDURE dbo.POInfo (@SupplierID INT)
+AS
+   SELECT s.SupplierName,
+          dm.DeliveryMethodName,
+          po.OrderDate,
+          po.ExpectedDeliveryDate
+   FROM Purchasing.PurchaseOrders AS po
+   JOIN Application.DeliveryMethods AS dm
+      ON dm.DeliveryMethodID = po.DeliveryMethodID
+   JOIN Purchasing.Suppliers AS s
+      ON s.SupplierID = po.SupplierID
+   WHERE po.SupplierID = @SupplierID;
+GO
+
+--4 or 2
+
+EXEC dbo.POInfo 
+    @SupplierID = 2;
+
+
+
+	DECLARE @PlanHandle VARBINARY(64)
+
+SELECT @PlanHandle = deps.plan_handle 
+FROM sys.dm_exec_procedure_stats AS deps
+WHERE deps.object_id = OBJECT_ID('dbo.POInfo')
+
+IF @PlanHandle IS NOT NULL
+    BEGIN
+        DBCC FREEPROCCACHE(@PlanHandle);
+    END
+GO
+
+EXEC dbo.POInfo
+    @SupplierID = 4;
 
