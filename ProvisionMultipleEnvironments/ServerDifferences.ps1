@@ -95,3 +95,8 @@ $Clones | foreach{
         | Wait-SqlCloneOperation
     }
 }
+
+## 6. Post-clone creation script
+$Instances | foreach{
+    Invoke-Sqlcmd -ServerInstance $_.name -Database 'Sales' -InputFile 'C:\Users\Grant\Documents\ServerPrep.sql'
+}
