@@ -11,14 +11,11 @@ $storageAccountKeys = Get-AzStorageAccountKey `
 $key = $storageAccountKeys[0].value
 $storagecontext = New-AzStorageContext `
                      -StorageAccountName $storageAccountName -StorageAccountKey $key
-<<<<<<< HEAD
-=======
 
 
 ##Connect to clone server
 Connect-SqlClone -ServerUrl $SQLCloneServer
 
->>>>>>> ServerChanges
 ## create a list of all your clones with their masks
 $Clones =
 @(
@@ -45,12 +42,6 @@ $Clones =
 )
 ## make a list of the machine names of all your instances
 $Instances = @(@{ 'name' = 'devmaria' }, @{ 'name' = 'devachmed' }, @{ 'name' = 'devtod' })
-<<<<<<< HEAD
-## add to each object the sql clone server instance
-$instances | foreach{
-    $_.instance = Get-SqlCloneSqlServerInstance -MachineName $_.name 
-    }
-=======
 
 ## add to each object the sql clone server instance
 $instances | foreach{
@@ -58,7 +49,6 @@ $instances | foreach{
     }
 
     
->>>>>>> ServerChanges
 ## Due to unresolved conflict with -Initialize in backup, removing files first
 get-azstorageblob -Context $storagecontext `
                   -Container 'backups' | Remove-AzStorageBlob
@@ -74,21 +64,11 @@ $clones | foreach{
 ## A fully networked solution would not require this step
 cd 'C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy'
 .\azcopy /source:$backupdir /dest:C:\BU /sourcekey:$key /S /Y
-<<<<<<< HEAD
-## 3. Clean up old clones and images
-##Connect to clone server
-Connect-SqlClone -ServerUrl $SQLCloneServer
-## Clone server definitions
-$devMaria = Get-SqlCloneSqlServerInstance -MachineName "devmaria"
-$devAchmed = Get-SqlCloneSqlServerInstance -MachineName "devachmed"
-$devtod = Get-SqlCloneSqlServerInstance -MachineName "devtod"
-=======
 
 ## 3. Clean up old clones and images
 ## Clone server definitions
 $devMaria = Get-SqlCloneSqlServerInstance -MachineName "devmaria"
 
->>>>>>> ServerChanges
 ## Determine where to store images
 $ImageDestination = Get-SqlCloneImageLocation `
                      -Path '\\provisiondiag932.file.core.windows.net\images'
@@ -97,10 +77,7 @@ $Clones | foreach{
     Get-SqlClone -Name $_.name | Remove-SqlClone | Wait-SqlCloneOperation
     Get-SqlCloneImage -Name $_.name | Remove-SqlCloneImage | Wait-SqlCloneOperation
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> ServerChanges
 ## 4. Create an image with clean data
 $Clones | foreach{
     $_.Image = New-SqlCloneImage `
@@ -108,17 +85,6 @@ $Clones | foreach{
      -BackupFileName "C:\BU\$($_.name).bak" -Destination $ImageDestination `
      -Modifications $_.Mask | Wait-SqlCloneOperation
 }
-<<<<<<< HEAD
-## 5. Create new clones
-$Clones | foreach{
-    $CurrentClone = $_
-    $Image = Get-SqlCloneImage -Name $CurrentClone.Image
-    $Instances | foreach{
-        New-SqlClone -Name $CurrentClone.name -Location $_.instance -Image $Image `
-        | Wait-SqlCloneOperation
-    }
-}
-=======
 
 ## 5. Create new clones
 $Clones | foreach{
@@ -129,4 +95,8 @@ $Clones | foreach{
         | Wait-SqlCloneOperation
     }
 }
->>>>>>> ServerChanges
+
+## 6. Post-clone creation script
+$Instances | foreach{
+    Invoke-Sqlcmd -ServerInstance $_.name -Database 'Sales' -InputFile 'C:\Users\Grant\Documents\ServerPrep.sql'
+}
