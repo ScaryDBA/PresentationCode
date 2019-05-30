@@ -112,11 +112,16 @@ docker exec -it DemoSharedVol "bash"
 
 
 
-## control the container with docker files
+## control the container with dockerfiles
+## show demodockerfile
 
-## create a new image from customized container
+## create a new image from dockerfile
+docker build -t demodockerfileimage .
 
-## create a new container from customized image
+docker images
+
+## create a new container from new image
+
 
 
 ## go whole hog with Spawn
@@ -135,6 +140,7 @@ docker rm Demo19
 docker rm Demo17vol
 docker rm DemoSharedVol
 docker volume rm sqlvol
+docker rmi dockerdemoimage
 
 
 
