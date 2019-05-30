@@ -1,0 +1,9 @@
+## We need a base image
+FROM mcr.microsoft.com/mssql/server:2019-CTP2.5-ubuntu
+
+RUN bash -Command (mkdir bu)
+
+COPY c:\Docker\sql\AdventureWorks2017.bak /bu
+
+ENV sa_password=$cthulhu1988
+ENV ACCEPT_EULA=Y

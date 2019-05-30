@@ -1,0 +1,16 @@
+## We need a base image
+FROM mcr.microsoft.com/mssql/server:2017-latest
+
+## let's modify it
+RUN mkdir bu
+
+## and move our database to it
+COPY "adventureworks2017.bak" /bu
+
+
+## we still have to accept the EULA and set a password
+ENV SA_PASSWORD=$cthulhu1988
+ENV ACCEPT_EULA=Y
+
+##run the restore
+
