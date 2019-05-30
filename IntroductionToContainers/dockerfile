@@ -1,20 +1,10 @@
 ## We need a base image
-FROM mcr.microsoft.com/mssql/server:2017-latest
+##FROM mcr.microsoft.com/mssql/server:2017-latest
+FROM mcr.microsoft.com/mssql/server:2019-CTP3.0-ubuntu
 
 ## let's modify it
 RUN mkdir /bu
 
-## and move our database to it
-##COPY --from=stage "c:\\docker\\sql\\adventureworks2017.bak"  "/bu"
-##COPY --from=stage adventureworks2017.bak /bu
-##COPY adventureworks2017.bak /bu
-##COPY C:\Docker\SQL\AdventureWorks2017.bak /bu
-##COPY C:\\Docker\\SQL\\AdventureWorks2017.bak /bu
-##COPY --from=stage C:\Docker\SQL\AdventureWorks2017.bak /bu
-##COPY --from=stage C:/Docker/SQL/AdventureWorks2017.bak /bu
-##COPY ["C:\Docker\SQL\AdventureWorks2017.bak", "/bu"]
-##COPY ["C:\Docker\SQL\AdventureWorks2017.bak"] /bu
-##COPY "C:\Docker\SQL\AdventureWorks2017.bak" /bu
+## copy in the backup
+COPY adventureworks2017.bak /bu
 
-##ADD adventureworks2017.bak /bu
-ADD C:/Docker/SQL/AdventureWorks2017.bak /bu

@@ -13,6 +13,7 @@ docker ps -a
 ## get an image
 docker pull mcr.microsoft.com/mssql/server:2017-latest
 docker pull mcr.microsoft.com/mssql/server:2019-CTP2.5-ubuntu
+docker pull mcr.microsoft.com/mssql/server:2019-CTP3.0-ubuntu
 
 
 docker ps -a
@@ -116,6 +117,7 @@ docker exec -it DemoSharedVol "bash"
 ## show demodockerfile
 
 ## create a new image from dockerfile
+## note: may need to copy & paste this, not F8
 docker build -t demodockerfileimage .
 
 docker images
@@ -129,9 +131,10 @@ docker run `
     -e 'ACCEPT_EULA=Y' `
     demodockerfileimage
 
-docker cp     
+docker cp C:\Docker\sql\AdventureWorks2017.bak DemoCustom:/bu
 
-    docker exec -it DemoCustom "bash"    
+
+docker exec -it DemoCustom "bash"    
 
 
 
@@ -158,4 +161,6 @@ docker rmi demodockerfileimage
 
 
 docker ps -a
+docker images
+
 
