@@ -2,15 +2,19 @@
 FROM mcr.microsoft.com/mssql/server:2017-latest
 
 ## let's modify it
-RUN mkdir bu
+RUN mkdir /bu
 
 ## and move our database to it
-COPY "adventureworks2017.bak" /bu
+##COPY --from=stage "c:\\docker\\sql\\adventureworks2017.bak"  "/bu"
+##COPY --from=stage adventureworks2017.bak /bu
+##COPY adventureworks2017.bak /bu
+##COPY C:\Docker\SQL\AdventureWorks2017.bak /bu
+##COPY C:\\Docker\\SQL\\AdventureWorks2017.bak /bu
+##COPY --from=stage C:\Docker\SQL\AdventureWorks2017.bak /bu
+##COPY --from=stage C:/Docker/SQL/AdventureWorks2017.bak /bu
+##COPY ["C:\Docker\SQL\AdventureWorks2017.bak", "/bu"]
+##COPY ["C:\Docker\SQL\AdventureWorks2017.bak"] /bu
+##COPY "C:\Docker\SQL\AdventureWorks2017.bak" /bu
 
-
-## we still have to accept the EULA and set a password
-ENV SA_PASSWORD=$cthulhu1988
-ENV ACCEPT_EULA=Y
-
-##run the restore
-
+##ADD adventureworks2017.bak /bu
+ADD C:/Docker/SQL/AdventureWorks2017.bak /bu

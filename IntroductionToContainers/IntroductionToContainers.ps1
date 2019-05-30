@@ -121,6 +121,17 @@ docker build -t demodockerfileimage .
 docker images
 
 ## create a new container from new image
+docker run `
+    --name DemoCustom `
+    -p 1470:1433 `
+    -d `
+    -e 'SA_PASSWORD=$cthulhu1988' `
+    -e 'ACCEPT_EULA=Y' `
+    demodockerfileimage
+
+docker cp     
+
+    docker exec -it DemoCustom "bash"    
 
 
 
@@ -135,13 +146,16 @@ docker stop Demo17
 docker stop Demo19
 docker stop Demo17vol
 docker stop DemoSharedVol
+docker stop DemoCustom
 docker rm Demo17
 docker rm Demo19
 docker rm Demo17vol
 docker rm DemoSharedVol
+docker rm DemoCustom
 docker volume rm sqlvol
-docker rmi dockerdemoimage
+docker rmi demodockerfileimage
 
 
 
 docker ps -a
+
