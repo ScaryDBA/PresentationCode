@@ -40,6 +40,10 @@ spawnctl get data-containers
 ## container
 spawnctl get data-container testcontainer
 
+## Detailed info on a container
+spawnctl get data-container sqlservertest -o json
+
+
 
 
 ## version the container, the magic begins
@@ -66,6 +70,8 @@ spawnctl create data-container --image testcontainer-graduate-1
 ## clean up
 spawnctl delete data-container testcontainer-graduate-1-ewqxrnsy
 spawnctl delete data-container testcontainer
+spawnctl delete data-container sqlservertest
+spawnctl delete data-image TestSS
 spawnctl delete data-image testcontainer-graduate-1
 spawnctl delete data-image granttest
 
