@@ -1,5 +1,5 @@
 ## We need a base image
-FROM mcr.microsoft.com/mssql/server:2019-CTP2.5-ubuntu
+FROM mcr.microsoft.com/mssql/server:2019-latest
 
 RUN bash -Command (mkdir bu)
 

@@ -14,14 +14,15 @@ docker ps -a
 docker pull mcr.microsoft.com/mssql/server:2017-latest
 docker pull mcr.microsoft.com/mssql/server:2019-CTP2.5-ubuntu
 docker pull mcr.microsoft.com/mssql/server:2019-CTP3.0-ubuntu
+docker pull mcr.microsoft.com/mssql/server:2019-latest
 
 
 docker ps -a
 
 ## remove an image
-docker rmi 5494536a73c1
+docker rmi 6243e166bb2a
 ## force remove
-docker rmi 7af596b24973 -f
+docker rmi 5494536a73c1 -f
 ## will fail if a container still exists
 
 
@@ -29,8 +30,8 @@ docker rmi 7af596b24973 -f
 docker run -e 'ACCEPT_EULA=Y' `
     -e 'SA_PASSWORD=$cthulhu1988' `
    -p 1433:1433 `
-   --name Demo17 `
-   -d mcr.microsoft.com/mssql/server:2017-latest
+   --name Demo19 `
+   -d mcr.microsoft.com/mssql/server:2019-latest
 
 ## check status
 docker ps
@@ -42,10 +43,10 @@ ipconfig
 
 
 ## stop a container
-docker stop Demo17
+docker stop Demo19
 
 ## start an container
-docker start Demo17
+docker start Demo19
 
 ## now what's the status
 docker ps -a
@@ -62,31 +63,43 @@ docker run -e 'ACCEPT_EULA=Y' `
 
 ## switch to ADS, create db & data   
 
+
+## permissions in 2019 are different than 2017
+docker exec -it Demo17vol "bash"
+
+##bash commands
+chgrp -R 0 /var/opt/mssql
+chmod -R g=u /var/opt/mssql
+
+
+##stop the running container
 docker stop Demo17vol
+
 
 
 ## create a new container using the same volume
 docker run -e 'ACCEPT_EULA=Y' `
     -e 'SA_PASSWORD=$cthulhu1988' `
     -p 1450:1433 `
-    --name Demo19 `
+    --name Demo19New `
     -v sqlvol:/var/opt/mssql `
-    -d mcr.microsoft.com/mssql/server:2019-CTP2.5-ubuntu
+    -d mcr.microsoft.com/mssql/server:2019-latest
 
 
+  
+docker ps -a
 
-
-docker stop Demo19
-
-
-## will crash because everything has been upgraded
+## stop the 2019 container & restart the 2017
+docker stop Demo19New
 docker start Demo17vol
 
 
 docker ps -a
 
 ## will need to update thc container ID
-docker logs 8d79c80ff4b7
+docker logs Demo17vol
+
+
 
 
 
@@ -101,7 +114,7 @@ docker run `
     -e "ACCEPT_EULA=Y" `
     -e 'SA_PASSWORD=$cthulhu1988' `
     -v C:\Docker\SQL:/bu `
-    -d mcr.microsoft.com/mssql/server:2019-CTP2.5-ubuntu
+    -d mcr.microsoft.com/mssql/server:2019-latest
 
 
 docker exec -it DemoSharedVol "bash"    
@@ -136,6 +149,7 @@ docker cp C:\Docker\sql\AdventureWorks2017.bak DemoCustom:/bu
 
 docker exec -it DemoCustom "bash"    
 
+docker logs DemoCustom
 
 
 ## go whole hog with Spawn
@@ -145,13 +159,13 @@ docker exec -it DemoCustom "bash"
 
 
 ## clean up
-docker stop Demo17
 docker stop Demo19
+docker stop Demo19New
 docker stop Demo17vol
 docker stop DemoSharedVol
 docker stop DemoCustom
-docker rm Demo17
 docker rm Demo19
+docker rm Demo19New
 docker rm Demo17vol
 docker rm DemoSharedVol
 docker rm DemoCustom
