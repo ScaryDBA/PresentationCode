@@ -12,8 +12,6 @@ docker ps -a
 
 ## get an image
 docker pull mcr.microsoft.com/mssql/server:2017-latest
-docker pull mcr.microsoft.com/mssql/server:2019-CTP2.5-ubuntu
-docker pull mcr.microsoft.com/mssql/server:2019-CTP3.0-ubuntu
 docker pull mcr.microsoft.com/mssql/server:2019-latest
 
 
@@ -75,8 +73,6 @@ chmod -R g=u /var/opt/mssql
 ##stop the running container
 docker stop Demo17vol
 
-
-
 ## create a new container using the same volume
 docker run -e 'ACCEPT_EULA=Y' `
     -e 'SA_PASSWORD=$cthulhu1988' `
@@ -97,7 +93,7 @@ docker start Demo17vol
 docker ps -a
 
 ## will need to update thc container ID
-docker logs Demo17vol
+docker logs Demo19New
 
 
 
