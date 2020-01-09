@@ -31,16 +31,26 @@ GO
 
 
 
---SELECT *
+--SELECT COUNT(*)
 --Kids, don't try this at home
 --I'm a professional
 
-SELECT * FROM dbo.bigTransactionHistory AS bth
---2:48
+SELECT COUNT(*) FROM dbo.bigTransactionHistory AS bth
 
 
-SELECT * FROM dbo.TransactionHistoryCS AS thc
---2:49
+
+SELECT COUNT(*) FROM dbo.TransactionHistoryCS AS thc
+
+
+
+
+
+
+
+
+
+
+
 
 
 
