@@ -1,0 +1,4 @@
+CREATE USER [admin] FOR LOGIN [admin]
+GO
+DENY BACKUP DATABASE TO [admin]
+DENY BACKUP LOG TO [admin]
