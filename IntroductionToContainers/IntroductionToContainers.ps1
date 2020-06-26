@@ -115,6 +115,8 @@ docker run `
 
 docker exec -it DemoSharedVol "bash"    
 
+docker exec -it -u root DemoSharedVol "bash"
+
 
 ##switch to ADS & restore database
 
