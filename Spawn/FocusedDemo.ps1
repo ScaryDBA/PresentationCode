@@ -1,10 +1,12 @@
+spawnctl version
+spawnctl auth
 ## create a blank image
-spawnctl create data-image -f ./demo.yaml
+spawnctl create data-image -f ./development.yaml
 
 
 
 ## create a container
-spawnctl create data-container --image grantdemo --name democontainer
+spawnctl create data-container --image granttest --name democontainer
 
 ## get details if needed
 spawnctl get data-container democontainer -o json

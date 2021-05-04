@@ -1,0 +1,154 @@
+## TODO: Before running, find all 'TODO' and make each edit!!
+
+cls;
+
+#--------------- 1 -----------------------
+
+'Script assumes you have already logged your PowerShell session into Azure.
+But if not, run  Connect-AzAccount (or  Connect-AzAccount), just one time.';
+#Connect-AzAccount;   # Same as  Connect-AzAccount.
+#Connect-AzAccount;
+Add-AzureAccount;
+
+#-------------- 2 ------------------------
+
+'
+TODO: Edit the values assigned to these variables, especially the first few!
+';
+
+# Ensure the current date is between
+# the Expiry and Start time values that you edit here.
+
+$subscriptionName    = 'Microsoft Azure Sponsorship';
+$resourceGroupName   = 'AzureDevOps';
+
+$policySasExpiryTime = '2025-01-01';
+$policySasStartTime  = '2021-4-01';
+
+$storageAccountLocation = 'East US';
+$storageAccountName     = 'exeventsoutput';
+$contextName            = 'exeventscontext';
+$containerName          = 'exevents';
+$policySasToken         = ' ? ';
+
+$policySasPermission = 'rwl';  # Leave this value alone, as 'rwl'.
+
+#--------------- 3 -----------------------
+
+# The ending display lists your Azure subscriptions.
+# One should match the $subscriptionName value you assigned
+#   earlier in this PowerShell script.
+
+'Choose an existing subscription for the current PowerShell environment.';
+
+Select-AzSubscription -Subscription $subscriptionName;
+
+#-------------- 4 ------------------------
+
+'
+Clean up the old Azure Storage Account after any previous run,
+before continuing this new run.';
+
+if ($storageAccountName) {
+    Remove-AzStorageAccount `
+        -Name              $storageAccountName `
+        -ResourceGroupName $resourceGroupName;
+}
+
+#--------------- 5 -----------------------
+
+[System.DateTime]::Now.ToString();
+
+'
+Create a storage account.
+This might take several minutes, will beep when ready.
+  ...PLEASE WAIT...';
+
+New-AzStorageAccount `
+    -Name              $storageAccountName `
+    -Location          $storageAccountLocation `
+    -ResourceGroupName $resourceGroupName `
+    -SkuName           'Standard_LRS';
+
+[System.DateTime]::Now.ToString();
+[System.Media.SystemSounds]::Beep.Play();
+
+'
+Get the access key for your storage account.
+';
+
+$accessKey_ForStorageAccount = `
+    (Get-AzStorageAccountKey `
+        -Name              $storageAccountName `
+        -ResourceGroupName $resourceGroupName
+        ).Value[0];
+
+"`$accessKey_ForStorageAccount = $accessKey_ForStorageAccount";
+
+'Azure Storage Account cmdlet completed.
+Remainder of PowerShell .ps1 script continues.
+';
+
+#--------------- 6 -----------------------
+
+# The context will be needed to create a container within the storage account.
+
+'Create a context object from the storage account and its primary access key.
+';
+
+$context = New-AzStorageContext `
+    -StorageAccountName $storageAccountName `
+    -StorageAccountKey  $accessKey_ForStorageAccount;
+
+'Create a container within the storage account.
+';
+
+$containerObjectInStorageAccount = New-AzStorageContainer `
+    -Name    $containerName `
+    -Context $context;
+
+'Create a security policy to be applied to the SAS token.
+';
+
+New-AzStorageContainerStoredAccessPolicy `
+    -Container  $containerName `
+    -Context    $context `
+    -Policy     $policySasToken `
+    -Permission $policySasPermission `
+    -ExpiryTime $policySasExpiryTime `
+    -StartTime  $policySasStartTime;
+
+'
+Generate a SAS token for the container.
+';
+
+try {
+    $sasTokenWithPolicy = New-AzStorageContainerSASToken `
+        -Name    $containerName `
+        -Context $context `
+        -Policy  $policySasToken;
+}
+catch {
+    $Error[0].Exception.ToString();
+}
+
+#-------------- 7 ------------------------
+
+'Display the values that YOU must edit into the Transact-SQL script next!:
+';
+
+"storageAccountName: $storageAccountName";
+"containerName:      $containerName";
+"sasTokenWithPolicy: $sasTokenWithPolicy";
+
+'
+REMINDER: sasTokenWithPolicy here might start with "?" character, which you must exclude from Transact-SQL.
+';
+
+'
+(Later, return here to delete your Azure Storage account. See the preceding  Remove-AzStorageAccount -Name $storageAccountName)';
+
+'
+Now shift to the Transact-SQL portion of the two-part code sample!';
+
+# EOFile

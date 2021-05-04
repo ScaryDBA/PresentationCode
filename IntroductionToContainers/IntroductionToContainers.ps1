@@ -28,7 +28,7 @@ docker rmi 5494536a73c1 -f
 docker run -e 'ACCEPT_EULA=Y' `
     -e 'SA_PASSWORD=$cthulhu1988' `
    -p 1433:1433 `
-   --name Demo19 `
+   --name TestInstance `
    -d mcr.microsoft.com/mssql/server:2019-latest
 
 ## check status
@@ -105,8 +105,8 @@ docker logs Demo19New
 ## shared drive and volumes
 ## first show the shared drives in Docker Desktop
 docker run `
-    --name DemoSharedVol `
-    -p 1460:1433 `
+    --name TestInstance `
+    -p 1433:1433 `
     -e "ACCEPT_EULA=Y" `
     -e 'SA_PASSWORD=$cthulhu1988' `
     -v C:\Docker\SQL:/bu `
