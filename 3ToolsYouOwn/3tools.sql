@@ -8,6 +8,7 @@ SELECT dest.text,
        der.writes
 FROM sys.dm_exec_requests AS der
     CROSS APPLY sys.dm_exec_query_plan(der.plan_handle) AS deqp
+	--CROSS APPLY sys.dm_exec_text_query_plan()
     CROSS APPLY sys.dm_exec_sql_text(der.sql_handle) AS dest;
 
 
@@ -28,7 +29,7 @@ FROM sys.dm_exec_query_stats AS deqs
 
 --Extended Events
 CREATE EVENT SESSION [QueryPerformance]
-ON SERVER
+ON database
     ADD EVENT sqlserver.rpc_completed
     (WHERE ([sqlserver].[database_name] = N'AdventureWorks')),
     ADD EVENT sqlserver.sql_batch_completed
@@ -101,3 +102,31 @@ WHERE qsq.object_id = OBJECT_ID('dbo.AddressByCity');
 
 
 
+
+
+
+USE [AdventureWorks]
+GO
+
+/****** Object:  StoredProcedure [dbo].[ProductTransactionHistoryByReference]    Script Date: 12/9/2021 8:44:15 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROC [dbo].[ProductTransactionHistoryByReference]
+(@ReferenceOrderID int)
+AS
+BEGIN
+    SELECT p.Name,
+           p.ProductNumber,
+           th.ReferenceOrderID
+    FROM Production.Product AS p
+        JOIN Production.TransactionHistory AS th
+            ON th.ProductID = p.ProductID
+    WHERE th.ReferenceOrderID = @ReferenceOrderID;
+END;
+GO
+
+ALTER DATABASE SCOPED CONFIGURATION CLEAR PROCEDURE_CACHE;

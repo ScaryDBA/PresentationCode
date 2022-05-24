@@ -28,8 +28,8 @@ docker rmi 5494536a73c1 -f
 docker run -e 'ACCEPT_EULA=Y' `
     -e 'SA_PASSWORD=$cthulhu1988' `
    -p 1433:1433 `
-   --name TestInstance `
-   -d mcr.microsoft.com/mssql/server:2019-latest
+   --name SQLServer2022 `
+   -d sqlservereap.azurecr.io/mssql/rhel/server:2022-latest
 
 ## check status
 docker ps

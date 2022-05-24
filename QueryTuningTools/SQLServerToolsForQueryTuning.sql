@@ -1,6 +1,6 @@
 --Extended Events
 --start at powershell
-USE AdventureWorks2014;
+USE AdventureWorks;
 GO
 
 
@@ -16,8 +16,8 @@ ROLLBACK TRAN
 
 
 
-
 DBCC SHOW_STATISTICS('Person.Address',_WA_Sys_00000004_164452B1)
+DBCC SHOW_STATISTICS('person.address',[_WA_Sys_00000004_3D5E1FD2])
 
 UPDATE STATISTICS Person.Address
 
@@ -73,6 +73,29 @@ WHERE ProductID = 448
 
 --probably not needed
 --ROLLBACK
+
+
+
+--retrieving deadlocks
+DECLARE @path NVARCHAR(260);
+--to retrieve the local path of system_health files 
+SELECT @path = dosdlc.path
+FROM sys.dm_os_server_diagnostics_log_configurations AS dosdlc;
+
+SELECT @path = @path + N'system_health_*';
+
+WITH fxd
+AS (SELECT CAST(fx.event_data AS XML) AS Event_Data
+    FROM sys.fn_xe_file_target_read_file(@path, NULL, NULL, NULL) AS fx )
+SELECT dl.deadlockgraph
+FROM
+(
+    SELECT dl.query('.') AS deadlockgraph
+    FROM fxd
+        CROSS APPLY event_data.nodes('(/event/data/value/deadlock)') AS d(dl)
+) AS dl;
+
+
 
 
 
@@ -134,10 +157,10 @@ FROM fxd
 
 
 --QUERY STORE
-USE AdventureWorks2014;
+USE AdventureWorks;
 GO
 
-ALTER DATABASE AdventureWorks2014 SET QUERY_STORE = ON;
+ALTER DATABASE AdventureWorks SET QUERY_STORE = ON;
 
 
 
@@ -177,7 +200,7 @@ JOIN    sys.query_store_query_text AS qsqt
 
 
 
-ALTER DATABASE AdventureWorks2014 SET QUERY_STORE = OFF;
+ALTER DATABASE AdventureWorks SET QUERY_STORE = OFF;
 
 
 
@@ -208,7 +231,7 @@ JOIN    sys.query_store_query_text AS qsqt
 
 
 
-ALTER DATABASE AdventureWorks2014 SET QUERY_STORE CLEAR;
+ALTER DATABASE AdventureWorks SET QUERY_STORE CLEAR;
 
 
 
@@ -222,7 +245,7 @@ JOIN    sys.query_store_query_text AS qsqt
 
 
 
-ALTER DATABASE AdventureWorks2014 SET QUERY_STORE = ON;
+ALTER DATABASE AdventureWorks SET QUERY_STORE = ON;
 
 
 
@@ -233,11 +256,11 @@ SELECT * FROM sys.database_query_store_options AS dqso
 
 --modify query store behavior
 
-ALTER DATABASE AdventureWorks2014 SET QUERY_STORE (MAX_STORAGE_SIZE_MB = 200);
+ALTER DATABASE AdventureWorks SET QUERY_STORE (MAX_STORAGE_SIZE_MB = 200);
  
 
 
-ALTER DATABASE AdventureWorks2014 SET QUERY_STORE (MAX_PLANS_PER_QUERY = 20);
+ALTER DATABASE AdventureWorks SET QUERY_STORE (MAX_PLANS_PER_QUERY = 20);
 
 
 
@@ -665,6 +688,7 @@ WHERE   dows.wait_type LIKE '%qds%';
 EXEC dbo.AddressByCity
     @City = N'London';
 
+ALTER DATABASE SCOPED CONFIGURATION CLEAR PROCEDURE_CACHE;
 
 
 DECLARE @PlanHandle VARBINARY(64)
@@ -709,6 +733,7 @@ JOIN    sys.query_store_query_text AS qsqt
 WHERE qsq.object_id = OBJECT_ID('dbo.AddressByCity');
 
 
+UPDATE STATISTICS person.Address.[_WA_Sys_00000004_3D5E1FD2]
 
 
 
@@ -787,6 +812,7 @@ EXEC dbo.AddressByCity
     @City = N'London';
 
 
+UPDATE STATISTICS Person.Address WITH FULLSCAN;
 
 
 
@@ -933,7 +959,7 @@ SELECT * FROM sys.dm_db_index_usage_stats AS ddius
 
 SELECT *
 FROM sys.dm_db_index_operational_stats(
-                                          DB_ID('AdventureWorks2014'),
+                                          DB_ID('AdventureWorks'),
                                           OBJECT_ID('Purchasing.PurchaseOrderDetail'),
                                           NULL, --IndexID
                                           NULL  --PartitionID
@@ -951,7 +977,7 @@ ROLLBACK TRAN
 
 SELECT *
 FROM sys.dm_db_index_physical_stats(
-                                       DB_ID('AdventureWorks2014'),
+                                       DB_ID('AdventureWorks'),
                                        OBJECT_ID('Purchasing.PurchaseOrderDetail'),
                                        NULL,
                                        NULL,
@@ -967,7 +993,7 @@ SELECT ddius.user_lookups,
        ddius.user_updates,
        ddius.index_id
 FROM sys.dm_db_index_usage_stats AS ddius
-WHERE ddius.database_id = DB_ID(N'AdventureWorks2014')
+WHERE ddius.database_id = DB_ID(N'AdventureWorks')
       AND ddius.object_id = OBJECT_ID('Purchasing.PurchaseOrderDetail')
       AND ddius.index_id = 1;
 
@@ -1687,6 +1713,7 @@ JOIN    Person.StateProvince AS sp
 WHERE   st.Name = 'Northeast'
         AND sp.Name = 'New York';
 
+EXEC dbo.AddressByCity @City = N'london' -- nvarchar(30)
 
 
 
@@ -1749,7 +1776,6 @@ CROSS APPLY (SELECT TOP (1)
              ORDER BY ph2.StartDate DESC
             ) ph
 WHERE   p.ProductID = '839';
-
 
 
 
@@ -2146,7 +2172,11 @@ ALTER TABLE Sales.SalesOrderDetail  WITH CHECK
 ADD  CONSTRAINT CK_SalesOrderDetail_UnitPrice CHECK  ((UnitPrice>=(0.00)));
 
 
-
+--Live query plan
+SELECT *
+FROM Production.ProductCostHistory AS pch,
+     Production.BillOfMaterials AS bom,
+     Person.ContactType AS ct;
 
 
 
@@ -2251,7 +2281,7 @@ FROM sys.dm_db_tuning_recommendations
 
 
 
-ALTER DATABASE AdventureWorks2014 
+ALTER DATABASE AdventureWorks 
 SET AUTOMATIC_TUNING (FORCE_LAST_GOOD_PLAN = ON);
 
 
@@ -2266,7 +2296,7 @@ FROM sys.database_automatic_tuning_options AS dato
 
 
 
-ALTER DATABASE AdventureWorks2014
+ALTER DATABASE AdventureWorks
 SET AUTOMATIC_TUNING (FORCE_LAST_GOOD_PLAN = OFF);
 
 
