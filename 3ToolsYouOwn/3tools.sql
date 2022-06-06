@@ -72,6 +72,11 @@ WHERE a.City = @City;
 
 EXEC dbo.AddressByCity @City = N'London' -- nvarchar(30)
 
+ALTER DATABASE SCOPED CONFIGURATION CLEAR PROCEDURE_CACHE;
+
+EXEC dbo.AddressByCity @City = N'Mentor' -- nvarchar(30)
+
+
 
 SELECT qsqt.query_sql_text,
        qsq.avg_compile_duration,
@@ -98,6 +103,10 @@ FROM sys.query_store_query AS qsq
     JOIN sys.query_store_wait_stats AS qsws
         ON qsws.plan_id = qsp.plan_id
 WHERE qsq.object_id = OBJECT_ID('dbo.AddressByCity');
+
+
+
+
 
 
 
