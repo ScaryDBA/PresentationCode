@@ -176,3 +176,27 @@ docker ps -a
 docker images
 
 
+docker run `
+    --name SQLServer2022 `
+    -p 1433:1433 `
+    -e "ACCEPT_EULA=Y" `
+    -e 'SA_PASSWORD=$cthulhu1988' `
+    -v C:\Docker\SQL:/bu `
+    -d sqlservereap.azurecr.io/mssql/rhel/server:2022-latest
+
+
+docker run `
+--name SQLServer2022 `
+-p 1433:1433 `
+-e "ACCEPT_EULA=Y" `
+-e 'SA_PASSWORD=$cthulhu1988' `
+-v C:\Docker\SQL:/bu `
+-d mcr.microsoft.com/mssql/rhel/server:2022-CTP2.0-rhel
+
+
+docker exec -u root -it SQLServer2022 "sudo /opt/mssql/bin/mssql-conf traceflag 12050 12059 12061 on"
+docker exec -u root -it SQLServer2022 "/bin/bash"
+docker exec -it -u 0 SQLServer2022 /bin/bash
+
+
+"c:\Program Files\Microsoft Corporation\RMLUtils\ostress" -U"sa" -P"$cthulhu1988" -Q"EXEC Warehouse.GetStockItemsbySupplier 4;" -n1 -r75 -q -oworkload_wwi_regress -dWideWorldImporters

@@ -75,4 +75,15 @@ ADD TARGET package0.event_file(SET filename=N'CardinalityFeedback')
 WITH (MAX_MEMORY=4096 KB,EVENT_RETENTION_MODE=ALLOW_SINGLE_EVENT_LOSS,MAX_DISPATCH_LATENCY=30 SECONDS,MAX_EVENT_SIZE=0 KB,MEMORY_PARTITION_MODE=NONE,TRACK_CAUSALITY=ON,STARTUP_STATE=OFF)
 GO
 
-
+CREATE EVENT SESSION [DOPFeedback]
+ON SERVER
+    ADD EVENT sqlserver.dop_feedback_eligible_query(),
+    ADD EVENT sqlserver.dop_feedback_provided(),
+    ADD EVENT sqlserver.dop_feedback_reverted(),
+    ADD EVENT sqlserver.dop_feedback_validation(),
+    ADD EVENT sqlserver.sql_batch_completed()
+WITH
+(
+    TRACK_CAUSALITY = ON
+);
+GO
