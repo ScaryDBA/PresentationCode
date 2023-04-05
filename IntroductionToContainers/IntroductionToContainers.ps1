@@ -28,8 +28,8 @@ docker rmi 5494536a73c1 -f
 docker run -e 'ACCEPT_EULA=Y' `
     -e 'SA_PASSWORD=$cthulhu1988' `
    -p 1433:1433 `
-   --name SQLServer2022 `
-   -d sqlservereap.azurecr.io/mssql/rhel/server:2022-latest
+   --name DemoContainer `
+   -d mcr.microsoft.com/mssql/server:2019-latest
 
 ## check status
 docker ps
@@ -56,7 +56,7 @@ docker run -e 'ACCEPT_EULA=Y' `
 -p 1450:1433 `
 --name Demo17vol `
 -v sqlvol:/var/opt/mssql `
--d mcr.microsoft.com/mssql/server:2017-latest
+-d mcr.microsoft.com/mssql/server:2019-latest
 
 
 ## switch to ADS, create db & data   
@@ -77,9 +77,9 @@ docker stop Demo17vol
 docker run -e 'ACCEPT_EULA=Y' `
     -e 'SA_PASSWORD=$cthulhu1988' `
     -p 1450:1433 `
-    --name Demo19New `
+    --name Demo22New `
     -v sqlvol:/var/opt/mssql `
-    -d mcr.microsoft.com/mssql/server:2019-latest
+    -d mcr.microsoft.com/mssql/server:2022-latest
 
 
   
@@ -105,12 +105,12 @@ docker logs Demo19New
 ## shared drive and volumes
 ## first show the shared drives in Docker Desktop
 docker run `
-    --name TestInstance `
+    --name DemoSharedVol `
     -p 1433:1433 `
     -e "ACCEPT_EULA=Y" `
     -e 'SA_PASSWORD=$cthulhu1988' `
-    -v C:\Docker\SQL:/bu `
-    -d mcr.microsoft.com/mssql/server:2019-latest
+    -v C:\bu:/bu `
+    -d mcr.microsoft.com/mssql/server:2022-latest
 
 
 docker exec -it DemoSharedVol "bash"    
