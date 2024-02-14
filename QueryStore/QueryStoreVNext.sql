@@ -438,9 +438,11 @@ WHERE   a.City = @City%';
 
 --picking up info between two points in time
 DECLARE @Basetime DATETIME, @comparetime DATETIME
-SET @BaseTime = '2019-6-12 14:20';
-SET @CompareTime = '2019-6-12 15:40';
+SET @BaseTime = '2023-10-6 11:20';
+SET @CompareTime = '2023-10-14 18:40';
  
+
+
 WITH CoreQuery
 AS (SELECT qsp.query_id,
        qsqt.query_sql_text,
@@ -463,19 +465,23 @@ AS (SELECT qsp.query_id,
        ON qsq.query_id = qsp.query_id
     JOIN sys.query_store_query_text AS qsqt
        ON qsqt.query_text_id = qsq.query_text_id
-   ),
+   )
+   --SELECT * FROM CoreQuery
+   ,
 BaseData
 AS (SELECT *
     FROM CoreQuery AS cq
     WHERE cq.start_time < @BaseTime
           AND cq.end_time > @BaseTime
-   ),
+   )
+  ,
 CompareData
 AS (SELECT *
     FROM CoreQuery AS cq
     WHERE cq.start_time < @CompareTime
           AND cq.end_time > @CompareTime
    )
+
 SELECT bd.query_sql_text,
    bd.query_plan,
    bd.avg_duration AS BaseAverage,
