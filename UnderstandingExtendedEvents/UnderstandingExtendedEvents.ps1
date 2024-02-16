@@ -18,7 +18,7 @@ $mysession = Get-DbaXESession -SqlInstance $server -Session QueryPerformance
 $mysession.Targets
 
 ##Get-DbaXESession -SqlInstance $server -Session QueryPerformance | Read-DbaXEFile
-## Read from the performance output. Stop the service first, containers
+## Read from the performance output. Stop the session first, containers
 Get-ChildItem C:\bu\QueryPerformance*.xel | Read-DbaXEFile | Format-Table object_name, duration, statement
 
 
