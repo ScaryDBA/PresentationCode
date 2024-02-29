@@ -31,8 +31,8 @@ SELECT @plan_handle = deps.plan_handle
 FROM sys.dm_exec_procedure_stats AS deps
 WHERE deps.object_id = OBJECT_ID('dbo.ProductTransactionHistoryByReference');
 
-DBCC FREEPROCCACHE(@plan_handle);
---ALTER DATABASE SCOPED CONFIGURATION CLEAR PROCEDURE_CACHE;"
+--DBCC FREEPROCCACHE(@plan_handle);
+ALTER DATABASE SCOPED CONFIGURATION CLEAR PROCEDURE_CACHE;"
 $Freecmd.Connection = $SqlConnection
 
 # Count the executions

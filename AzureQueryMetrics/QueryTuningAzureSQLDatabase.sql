@@ -1,7 +1,8 @@
 --Existing tools
 
 --run for results
-SET STATISTICS IO ON 
+SET STATISTICS TIME ON 
+SET STATISTICS IO ON
 SELECT  *
 FROM    Person.Address AS a
 WHERE   a.City = 'Peoria';
@@ -11,10 +12,6 @@ WHERE   a.City = 'Peoria';
 
 --expand ssms
 --show mising Management Folder
-
---Third party
---write query
---show execution plan
 
 
 --remember PowerShell!!!
@@ -34,11 +31,6 @@ WHERE   a.City = 'Peoria';
 --DBCC
 
 DBCC SHOW_STATISTICS('Person.Address', PK_Address_AddressID);
-
-
-
-
-DBCC SHOW_STATISTICS('Person.Address',[_WA_Sys_00000004_5DCAEF64]) WITH stat_header;
 
 
 
