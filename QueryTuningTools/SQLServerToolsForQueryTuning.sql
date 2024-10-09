@@ -260,7 +260,7 @@ ALTER DATABASE AdventureWorks SET QUERY_STORE (MAX_STORAGE_SIZE_MB = 200);
  
 
 
-ALTER DATABASE AdventureWorks SET QUERY_STORE (MAX_PLANS_PER_QUERY = 20);
+ALTER DATABASE AdventureWorks SET QUERY_STORE (MAX_PLANS_PER_QUERY = 200);
 
 
 
@@ -326,17 +326,17 @@ JOIN    sys.dm_exec_query_stats AS deqs
 
 
 
-SELECT qsqt.query_sql_text,
-       qsq.avg_compile_duration,
-       CAST(qsp.query_plan AS XML),
-       qsp.query_plan,
-       qsrs.execution_type_desc,
-       qsrs.count_executions,
-       qsrs.avg_duration,
-       qsrs.min_duration,
-       qsrs.max_duration,
-       qsrs.avg_cpu_time,
-       qsrs.avg_logical_io_reads,
+	SELECT qsqt.query_sql_text,
+		   qsq.avg_compile_duration,
+		   CAST(qsp.query_plan AS XML),
+		   qsp.query_plan,
+		   qsrs.execution_type_desc,
+		   qsrs.count_executions,
+		   qsrs.avg_duration,
+		   qsrs.min_duration,
+		   qsrs.max_duration,
+		   qsrs.avg_cpu_time,
+		   qsrs.avg_logical_io_reads,
        qsrs.avg_logical_io_writes,
        qsrs.avg_physical_io_reads,
        qsrs.avg_query_max_used_memory,
@@ -558,6 +558,7 @@ EXEC dbo.AddressByCity
 
 SELECT  qsq.query_id,
         qsqt.query_text_id,
+		qsp.plan_id,
         qsqt.query_sql_text,
 		qsp.query_plan,
 		qsp.last_execution_time,
@@ -1873,7 +1874,7 @@ Quantity,
 ActualCost);
 
 
-
+DROP INDEX Production.TransactionHistory.ix_csTest;
 
 
 SELECT  p.Name,
@@ -2304,7 +2305,18 @@ SET AUTOMATIC_TUNING (FORCE_LAST_GOOD_PLAN = OFF);
 
 
 
---adaptive query tuning
+--Intelligent query processing
+
+
+
+
+
+
+
+
+
+
+
 CREATE OR ALTER FUNCTION dbo.SalesInfo ( )
 RETURNS @return_variable TABLE
     (
@@ -2408,3 +2420,5 @@ SELECT  csi.OrderDate ,
 FROM    dbo.CombinedSalesInfo() AS csi
 WHERE   csi.SalesPersonID = 277
         AND csi.ShippingCity = 'Odessa' ;
+
+

@@ -113,6 +113,11 @@ docker run `
     -d mcr.microsoft.com/mssql/server:2022-latest
 
 
+    docker run `
+    --name PostgresFundamentals `
+    -e POSTGRES_PASSWORD=cthulhu1988* `
+    -d postgres
+
 docker exec -it DemoSharedVol "bash"    
 
 docker exec -it -u root DemoSharedVol "bash"
