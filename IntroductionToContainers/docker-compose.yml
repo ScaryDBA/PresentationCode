@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  hamshackdb:
+    image: timescale/timescaledb-ha:pg17
+    container_name: ComposeExample
+    environment:
+      - POSTGRES_PASSWORD=*cthulhu1988
+      - POSTGRES_USER=postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - C:\bu:/var/lib/postgresql/data
+    restart: unless-stopped

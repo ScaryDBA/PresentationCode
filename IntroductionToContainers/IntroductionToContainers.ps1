@@ -12,7 +12,7 @@ docker ps -a
 
 ## get an image
 docker pull mcr.microsoft.com/mssql/server:2017-latest
-docker pull mcr.microsoft.com/mssql/server:2019-latest
+docker pull mcr.microsoft.com/mssql/server:2022-latest
 
 
 docker ps -a
@@ -29,7 +29,7 @@ docker run -e 'ACCEPT_EULA=Y' `
     -e 'SA_PASSWORD=$cthulhu1988' `
    -p 1433:1433 `
    --name DemoContainer `
-   -d mcr.microsoft.com/mssql/server:2019-latest
+   -d mcr.microsoft.com/mssql/server:2022-latest
 
 ## check status
 docker ps
@@ -53,10 +53,14 @@ docker ps -a
 ## create a container with a data volume
 docker run -e 'ACCEPT_EULA=Y' `
 -e 'SA_PASSWORD=$cthulhu1988' `
--p 1450:1433 `
---name Demo17vol `
--v sqlvol:/var/opt/mssql `
--d mcr.microsoft.com/mssql/server:2019-latest
+-p 1433:1433 `
+--name VolDemo `
+-v C:\bu:/var/opt/mssql `
+-d mcr.microsoft.com/mssql/server:2022-latest
+
+
+
+
 
 
 ## switch to ADS, create db & data   
@@ -205,3 +209,14 @@ docker exec -it -u 0 SQLServer2022 /bin/bash
 
 
 "c:\Program Files\Microsoft Corporation\RMLUtils\ostress" -U"sa" -P"$cthulhu1988" -Q"EXEC Warehouse.GetStockItemsbySupplier 4;" -n1 -r75 -q -oworkload_wwi_regress -dWideWorldImporters
+
+docker run `
+    --name HamShackSQL `
+    -p 1433:1433 `
+    -e "ACCEPT_EULA=Y" `
+    -e 'SA_PASSWORD=*cthulhu1988' `
+    -v C:\bu:/bu `
+    -d mcr.microsoft.com/mssql/server:2022-latest
+
+docker stop HamShackSQL
+docker rm HamShackSQL
