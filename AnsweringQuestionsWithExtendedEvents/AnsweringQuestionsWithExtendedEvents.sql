@@ -1,4 +1,4 @@
-
+ 
 USE	AdventureWorks;
 GO
 

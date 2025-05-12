@@ -107,6 +107,22 @@ ON SERVER
 WITH (TRACK_CAUSALITY = ON);
 GO
 
+USE AdventureWorks;
+GO
+CREATE OR ALTER PROC dbo.ProductTransactionHistoryByReference (
+     @ReferenceOrderID int
+    )
+AS
+BEGIN
+    SELECT  p.Name,
+            p.ProductNumber,
+            th.ReferenceOrderID
+    FROM    Production.Product AS p
+    JOIN    Production.TransactionHistory AS th
+            ON th.ProductID = p.ProductID
+    WHERE   th.ReferenceOrderID = @ReferenceOrderID;
+END
+GO
 
 
 
