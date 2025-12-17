@@ -154,7 +154,7 @@ docker run `
 docker cp C:\Docker\sql\AdventureWorks2017.bak DemoCustom:/bu
 
 
-docker exec -it DemoCustom "bash"    
+docker exec -it 2025SQL "bash"    
 
 docker logs DemoCustom
 
@@ -211,12 +211,12 @@ docker exec -it -u 0 SQLServer2022 /bin/bash
 "c:\Program Files\Microsoft Corporation\RMLUtils\ostress" -U"sa" -P"$cthulhu1988" -Q"EXEC Warehouse.GetStockItemsbySupplier 4;" -n1 -r75 -q -oworkload_wwi_regress -dWideWorldImporters
 
 docker run `
-    --name HamShackSQL `
+    --name 2025SQL `
     -p 1433:1433 `
     -e "ACCEPT_EULA=Y" `
     -e 'SA_PASSWORD=*cthulhu1988' `
     -v C:\bu:/bu `
-    -d mcr.microsoft.com/mssql/server:2022-latest
+    -d mcr.microsoft.com/mssql/server:2025-latest
 
 docker stop HamShackSQL
 docker rm HamShackSQL
