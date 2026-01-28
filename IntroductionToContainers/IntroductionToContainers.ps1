@@ -52,15 +52,15 @@ docker ps -a
 
 ## create a container with a data volume
 docker run -e 'ACCEPT_EULA=Y' `
--e 'SA_PASSWORD=$cthulhu1988' `
+-e 'SA_PASSWORD=*cthulhu1988' `
 -p 1433:1433 `
---name VolDemo `
--v C:\bu:/var/opt/mssql `
--d mcr.microsoft.com/mssql/server:2022-latest
+--name HamShack `
+-v sql_vol:/var/opt/mssql `
+-d mcr.microsoft.com/mssql/server:2025-latest
 
-
-
-
+docker stop HamShack
+docker rm HamShack
+docker rm -f HamShack
 
 
 ## switch to ADS, create db & data   
@@ -79,7 +79,7 @@ docker stop Demo17vol
 
 ## create a new container using the same volume
 docker run -e 'ACCEPT_EULA=Y' `
-    -e 'SA_PASSWORD=$cthulhu1988' `
+    -e 'SA_PASSWORD=*cthulhu1988' `
     -p 1450:1433 `
     --name Demo22New `
     -v sqlvol:/var/opt/mssql `
@@ -204,19 +204,27 @@ docker run `
 
 
 docker exec -u root -it SQLServer2022 "sudo /opt/mssql/bin/mssql-conf traceflag 12050 12059 12061 on"
-docker exec -u root -it SQLServer2022 "/bin/bash"
+docker exec -u root -it HamShackRadio "/bin/bash"
 docker exec -it -u 0 SQLServer2022 /bin/bash
 
 
 "c:\Program Files\Microsoft Corporation\RMLUtils\ostress" -U"sa" -P"$cthulhu1988" -Q"EXEC Warehouse.GetStockItemsbySupplier 4;" -n1 -r75 -q -oworkload_wwi_regress -dWideWorldImporters
 
 docker run `
-    --name 2025SQL `
+    --name HamShack `
     -p 1433:1433 `
     -e "ACCEPT_EULA=Y" `
     -e 'SA_PASSWORD=*cthulhu1988' `
     -v C:\bu:/bu `
     -d mcr.microsoft.com/mssql/server:2025-latest
+
+# Execute into the container as root
+docker exec -it -u root HamShack /bin/bash
+
+# Then inside the container, run:
+chown -R mssql:root /bu
+chmod -R 775 /bu
+
 
 docker stop HamShackSQL
 docker rm HamShackSQL

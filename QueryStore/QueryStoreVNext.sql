@@ -16,6 +16,7 @@ ALTER DATABASE AdventureWorks SET QUERY_STORE = ON;
 
 
 
+
 GO
 
 CREATE  OR ALTER PROC dbo.AddressByCity @City NVARCHAR(30)
@@ -30,6 +31,7 @@ AS
    JOIN Person.StateProvince AS sp
       ON a.StateProvinceID = sp.StateProvinceID
    WHERE a.City = @City;
+
 
 
 
@@ -54,7 +56,9 @@ JOIN    sys.query_store_query_text AS qsqt
 
 
 
-ALTER DATABASE AdventureWorks SET QUERY_STORE = OFF;
+
+
+ALTER DATABASE AdventureWorks SET QUERY_STORE = ON;
 
 
 
@@ -111,6 +115,7 @@ ALTER DATABASE AdventureWorks SET QUERY_STORE = ON;
 
 
 --gather data about query store
+
 SELECT * FROM sys.database_query_store_options AS dqso;
 
 
@@ -438,8 +443,8 @@ WHERE   a.City = @City%';
 
 --picking up info between two points in time
 DECLARE @Basetime DATETIME, @comparetime DATETIME
-SET @BaseTime = '2023-10-6 11:20';
-SET @CompareTime = '2023-10-14 18:40';
+SET @BaseTime = '2026-01-23 13:20';
+SET @CompareTime = '2026-01-23 14:55';
  
 
 
@@ -493,6 +498,7 @@ FROM BaseData AS bd
 JOIN CompareData AS cd
    ON bd.query_id = cd.query_id
 WHERE cd.max_duration > bd.max_duration;
+
 
 
 
