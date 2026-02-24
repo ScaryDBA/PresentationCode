@@ -1,7 +1,20 @@
+## regular postgresql container
+docker pull postgres:latest
+docker run -d --name APRSReporter `
+    -p 5432:5432 `
+    -e POSTGRES_PASSWORD=*cthulhu1988 `
+    -v C:/bu:/var/lib/postgresql `
+    -e POSTGRES_USER=postgres `
+    postgres:latest
+
+docker start APRSReporter
+docker stop APRSReporter
+docker rm APRSReporter
+
+
+
 ## Timescale
-
 docker pull timescale/timescaledb-ha:pg17.7-ts2.24.0
-
 docker run -d --name HamShackRadio `
     -p 5432:5432 `
     -e POSTGRES_PASSWORD=*cthulhu1988 `
